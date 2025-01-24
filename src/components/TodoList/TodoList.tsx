@@ -35,7 +35,7 @@ export const TodoList: React.FC<Props> = ({
         />
       ))}
       {tempTodo && (
-        <TodoItem key={tempTodo.id} todo={tempTodo} isLoading={isLoading} />
+        <TodoItem key={tempTodo.id} todo={tempTodo} isLoading={true} />
       )}
     </section>
   );

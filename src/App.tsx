@@ -20,7 +20,6 @@ export const App: React.FC = () => {
   );
   const [filterTodoBy, setFilterTodoBy] = useState<FilterType>(FilterType.ALL);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [loadingByIds, setLoadingByIds] = useState<number[]>([]);
   const isAllCompletedTodo = todos.every(todo => todo.completed);
   const isVisibileBtn = todos.length > 0;
@@ -59,7 +58,6 @@ export const App: React.FC = () => {
 
   const addTodo = ({ id, userId, title, completed }: Todo) => {
     setErrorMessage(ErrorType.ERROR_DEFAULT);
-    setIsLoading(true);
 
     const newTempTodo = { id, userId, title, completed };
 
@@ -74,7 +72,6 @@ export const App: React.FC = () => {
         throw error;
       })
       .finally(() => {
-        setIsLoading(false);
         setTempTodo(null);
       });
   };
@@ -157,20 +154,6 @@ export const App: React.FC = () => {
     setErrorMessage(ErrorType.ERROR_DEFAULT);
     setLoadingByIds(prev => [...prev, updatedTodo.id]);
 
-    const findTodo = todos.find(todo => todo.id === updatedTodo.id) as Todo;
-
-    if (findTodo?.title.trim() === updatedTodo.title.trim()) {
-      setLoadingByIds([]);
-
-      return;
-    }
-
-    if (updatedTodo.title.trim() === '') {
-      deleteTodo(updatedTodo.id);
-
-      return;
-    }
-
     return todoServices
       .updateTodo(updatedTodo)
       .then(newTodo => {
@@ -206,7 +189,7 @@ export const App: React.FC = () => {
           isVisibileBtn={isVisibileBtn}
           isAllCompletedTodo={isAllCompletedTodo}
           inputRef={inputRef}
-          isLoading={isLoading}
+          isLoading={!!tempTodo}
           setErrorMessage={setErrorMessage}
           onSubmit={addTodo}
           toggleAll={toggleAll}
@@ -215,7 +198,7 @@ export const App: React.FC = () => {
         <TodoList
           filteredTodos={filteredTodos}
           tempTodo={tempTodo}
-          isLoading={isLoading}
+          isLoading={!!tempTodo}
           loadingByIds={loadingByIds}
           onDelete={deleteTodo}
           updateTodo={updateTodoStatus}

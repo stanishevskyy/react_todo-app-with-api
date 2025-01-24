@@ -37,12 +37,24 @@ export const TodoItem: React.FC<Props> = ({
   };
 
   const handleUpdate = () => {
-    updateTodoTitle({ ...todo, title: newTitle.trim() });
-    setIsEditing(false);
+    if (title.trim() === newTitle.trim()) {
+      setIsEditing(false);
+
+      return;
+    }
+
+    if (newTitle.trim() === '') {
+      return onDelete(id);
+    }
+
+    if (updateTodoTitle) {
+      updateTodoTitle({ ...todo, title: newTitle.trim() })
+        .then(() => setIsEditing(false))
+        .catch(() => setIsEditing(true));
+    }
   };
 
   const handleOnBlur = () => {
-    setNewTitle(newTitle.trim());
     handleUpdate();
   };
 
@@ -55,13 +67,9 @@ export const TodoItem: React.FC<Props> = ({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    {
-      if (event.key === 'Escape') {
-        setNewTitle(title);
-        if (inputRef.current) {
-          inputRef.current.blur();
-        }
-      }
+    if (event.key === 'Escape') {
+      setNewTitle(title);
+      setIsEditing(false);
     }
   };
 
