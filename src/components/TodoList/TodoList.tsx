@@ -1,6 +1,7 @@
 import React from 'react';
 import { Todo } from '../../types/Todo';
 import { TodoItem } from '../TodoItem';
+import { ErrorType } from '../../types/ErrorType';
 
 type Props = {
   filteredTodos: Todo[];
@@ -10,6 +11,7 @@ type Props = {
   onDelete: (value: number) => Promise<void>;
   updateTodo: (todoToUpdate: Todo) => Promise<void>;
   updateTodoTitle: (todoToUpdate: Todo) => Promise<void>;
+  setErrorMessage: (value: ErrorType) => void;
 };
 
 export const TodoList: React.FC<Props> = ({
@@ -20,6 +22,7 @@ export const TodoList: React.FC<Props> = ({
   onDelete,
   updateTodo,
   updateTodoTitle,
+  setErrorMessage,
 }) => {
   return (
     <section className="todoapp__main" data-cy="TodoList">
@@ -32,6 +35,7 @@ export const TodoList: React.FC<Props> = ({
           onDelete={onDelete}
           updateTodo={updateTodo}
           updateTodoTitle={updateTodoTitle}
+          setErrorMessage={setErrorMessage}
         />
       ))}
       {tempTodo && (

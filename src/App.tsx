@@ -154,6 +154,10 @@ export const App: React.FC = () => {
     setErrorMessage(ErrorType.ERROR_DEFAULT);
     setLoadingByIds(prev => [...prev, updatedTodo.id]);
 
+    if (updatedTodo.title.trim() === '') {
+      return deleteTodo(updatedTodo.id);
+    }
+
     return todoServices
       .updateTodo(updatedTodo)
       .then(newTodo => {
@@ -203,6 +207,7 @@ export const App: React.FC = () => {
           onDelete={deleteTodo}
           updateTodo={updateTodoStatus}
           updateTodoTitle={updateTodoTitle}
+          setErrorMessage={setErrorMessage}
         />
 
         {/* Hide the footer if there are no todos */}

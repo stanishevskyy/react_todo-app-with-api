@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
 import { Todo } from '../../types/Todo';
+import { ErrorType } from '../../types/ErrorType';
 
 type Props = {
   todo: Todo;
@@ -9,6 +10,7 @@ type Props = {
   onDelete?: (value: number) => Promise<void>;
   updateTodo?: (todoToUpdate: Todo) => Promise<void>;
   updateTodoTitle?: (todoToUpdate: Todo) => Promise<void>;
+  setErrorMessage?: (value: ErrorType) => void;
 };
 
 export const TodoItem: React.FC<Props> = ({
@@ -18,6 +20,7 @@ export const TodoItem: React.FC<Props> = ({
   onDelete = () => {},
   updateTodo = () => {},
   updateTodoTitle = () => {},
+  setErrorMessage = () => {},
 }) => {
   const { completed, title, id } = todo;
 
@@ -37,20 +40,21 @@ export const TodoItem: React.FC<Props> = ({
   };
 
   const handleUpdate = () => {
-    if (title.trim() === newTitle.trim()) {
-      setIsEditing(false);
+    if (newTitle.trim() === '') {
+      onDelete(id).catch(() => {
+        setErrorMessage(ErrorType.ERROR_DELETE);
+      });
 
       return;
-    }
-
-    if (newTitle.trim() === '') {
-      return onDelete(id);
     }
 
     if (updateTodoTitle) {
       updateTodoTitle({ ...todo, title: newTitle.trim() })
         .then(() => setIsEditing(false))
-        .catch(() => setIsEditing(true));
+        .catch(() => {
+          setIsEditing(true);
+          setErrorMessage(ErrorType.ERROR_UPDATE);
+        });
     }
   };
 
@@ -70,6 +74,12 @@ export const TodoItem: React.FC<Props> = ({
     if (event.key === 'Escape') {
       setNewTitle(title);
       setIsEditing(false);
+    }
+
+    if (event.key === 'Enter') {
+      if (title.trim() === newTitle.trim()) {
+        setIsEditing(false);
+      }
     }
   };
 
