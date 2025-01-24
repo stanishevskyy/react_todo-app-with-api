@@ -15,12 +15,14 @@ import { ErrorNotification } from './components/ErrorNotification';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [tempTodo, setTempTodo] = useState<Todo | null>(null);
+  const [loadingByIds, setLoadingByIds] = useState<number[]>([]);
+
   const [errorMessage, setErrorMessage] = useState<ErrorType>(
     ErrorType.ERROR_DEFAULT,
   );
   const [filterTodoBy, setFilterTodoBy] = useState<FilterType>(FilterType.ALL);
-  const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [loadingByIds, setLoadingByIds] = useState<number[]>([]);
+
   const isAllCompletedTodo = todos.every(todo => todo.completed);
   const isVisibileBtn = todos.length > 0;
   const inputRef = useRef<HTMLInputElement>(null);
@@ -101,9 +103,7 @@ export const App: React.FC = () => {
       .filter(todo => todo.completed)
       .map(todo => todo.id);
 
-    const deletionCompletedTodo = completedTodoId.map(id => deleteTodo(id));
-
-    Promise.all(deletionCompletedTodo);
+    completedTodoId.forEach(completedTodo => deleteTodo(completedTodo));
   };
 
   const updateTodoStatus = (todoToUpdate: Todo) => {
