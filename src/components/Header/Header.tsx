@@ -2,21 +2,28 @@ import React, { useEffect, useState } from 'react';
 import { Todo } from '../../types/Todo';
 import { ErrorType } from '../../types/ErrorType';
 import { USER_ID } from '../../api/todos';
+import classNames from 'classnames';
 
 type Props = {
+  isVisibileBtn: boolean;
+  isAllCompletedTodo: boolean;
   inputRef: React.RefObject<HTMLInputElement>;
   isLoading: boolean;
   setErrorMessage: (value: ErrorType) => void;
   onSubmit: (value: Todo) => Promise<void>;
+  toggleAll: () => void;
 };
 
 export const Header: React.FC<Props> = ({
+  isVisibileBtn,
+  isAllCompletedTodo,
   inputRef,
   isLoading,
   setErrorMessage,
   onSubmit,
+  toggleAll,
 }) => {
-  const [title, setTitle] = useState('');
+  const [todoTitle, setTodoTitle] = useState('');
 
   useEffect(() => {
     if (!isLoading) {
@@ -27,7 +34,7 @@ export const Header: React.FC<Props> = ({
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!title.trim()) {
+    if (!todoTitle.trim()) {
       setErrorMessage(ErrorType.ERROR_TITLE);
 
       return;
@@ -35,20 +42,25 @@ export const Header: React.FC<Props> = ({
 
     onSubmit({
       id: 0,
-      title: title.trim(),
+      title: todoTitle.trim(),
       userId: USER_ID,
       completed: false,
-    }).then(() => setTitle(''));
+    }).then(() => setTodoTitle(''));
   };
 
   return (
     <header className="todoapp__header">
       {/* this button should have `active` class only if all todos are completed */}
-      <button
-        type="button"
-        className="todoapp__toggle-all active"
-        data-cy="ToggleAllButton"
-      />
+      {isVisibileBtn && (
+        <button
+          type="button"
+          className={classNames('todoapp__toggle-all', {
+            active: isAllCompletedTodo,
+          })}
+          data-cy="ToggleAllButton"
+          onClick={toggleAll}
+        />
+      )}
 
       {/* Add a todo on form submit */}
       <form onSubmit={handleSubmit}>
@@ -57,8 +69,8 @@ export const Header: React.FC<Props> = ({
           type="text"
           className="todoapp__new-todo"
           placeholder="What needs to be done?"
-          value={title}
-          onChange={event => setTitle(event.target.value)}
+          value={todoTitle}
+          onChange={event => setTodoTitle(event.target.value)}
           ref={inputRef}
           disabled={isLoading}
         />

@@ -22,7 +22,8 @@ export const App: React.FC = () => {
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingByIds, setLoadingByIds] = useState<number[]>([]);
-
+  const isAllCompletedTodo = todos.every(todo => todo.completed);
+  const isVisibileBtn = todos.length > 0;
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -108,7 +109,89 @@ export const App: React.FC = () => {
     Promise.all(deletionCompletedTodo);
   };
 
-  const updateTodo = (todoToUpdate: Todo) => {};
+  const updateTodoStatus = (todoToUpdate: Todo) => {
+    setErrorMessage(ErrorType.ERROR_DEFAULT);
+    setLoadingByIds(prev => [...prev, todoToUpdate.id]);
+
+    const findTodo = todos.find(todo => todo.id === todoToUpdate.id) as Todo;
+
+    const updatedTodo = { ...findTodo, completed: !findTodo.completed };
+
+    return todoServices
+      .updateTodo(updatedTodo)
+      .then(newTodo => {
+        setTodos(currentTodos => {
+          return currentTodos.map(todo => {
+            if (todo.id === newTodo.id) {
+              return newTodo;
+            }
+
+            return todo;
+          });
+        });
+      })
+      .catch(error => {
+        setErrorMessage(ErrorType.ERROR_UPDATE);
+        throw error;
+      })
+      .finally(() => {
+        setLoadingByIds(prev => prev.filter(id => id !== todoToUpdate.id));
+      });
+  };
+
+  const toggleAll = () => {
+    const uncompletedTodos = todos.filter(todo => !todo.completed);
+
+    if (uncompletedTodos.length > 0) {
+      uncompletedTodos.forEach(todo => {
+        updateTodoStatus({ ...todo, completed: true });
+      });
+    } else {
+      todos.forEach(todo => {
+        updateTodoStatus({ ...todo, completed: false });
+      });
+    }
+  };
+
+  const updateTodoTitle = (updatedTodo: Todo) => {
+    setErrorMessage(ErrorType.ERROR_DEFAULT);
+    setLoadingByIds(prev => [...prev, updatedTodo.id]);
+
+    const findTodo = todos.find(todo => todo.id === updatedTodo.id) as Todo;
+
+    if (findTodo?.title.trim() === updatedTodo.title.trim()) {
+      setLoadingByIds([]);
+
+      return;
+    }
+
+    if (updatedTodo.title.trim() === '') {
+      deleteTodo(updatedTodo.id);
+
+      return;
+    }
+
+    return todoServices
+      .updateTodo(updatedTodo)
+      .then(newTodo => {
+        setTodos(currentTodos => {
+          return currentTodos.map(todo => {
+            if (todo.id === newTodo.id) {
+              return newTodo;
+            }
+
+            return todo;
+          });
+        });
+      })
+      .catch(error => {
+        setErrorMessage(ErrorType.ERROR_UPDATE);
+        throw error;
+      })
+      .finally(() => {
+        setLoadingByIds(prev => prev.filter(id => id !== updatedTodo.id));
+      });
+  };
 
   if (!todoServices.USER_ID) {
     return <UserWarning />;
@@ -120,10 +203,13 @@ export const App: React.FC = () => {
 
       <div className="todoapp__content">
         <Header
+          isVisibileBtn={isVisibileBtn}
+          isAllCompletedTodo={isAllCompletedTodo}
           inputRef={inputRef}
           isLoading={isLoading}
           setErrorMessage={setErrorMessage}
           onSubmit={addTodo}
+          toggleAll={toggleAll}
         />
 
         <TodoList
@@ -132,6 +218,8 @@ export const App: React.FC = () => {
           isLoading={isLoading}
           loadingByIds={loadingByIds}
           onDelete={deleteTodo}
+          updateTodo={updateTodoStatus}
+          updateTodoTitle={updateTodoTitle}
         />
 
         {/* Hide the footer if there are no todos */}
